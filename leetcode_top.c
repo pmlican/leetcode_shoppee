@@ -136,3 +136,50 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
     *returnSize = numsSize;
     return nums;
 }
+
+//MARK: 224. 基本计算器
+
+//因为字符只包含空格，(，)，+，-，和数字0-9
+
+int calculate(char * s){
+    int n = strlen(s); //获取字符长度
+    int stack[n]; //定义一个栈，存放操作符号，如果是+ 则为+1，如果为- 则为-1
+    int top = 0;
+    int sign = 1; //定义操作符
+    stack[top++] = sign; //默认为+，并更新top, 栈顶元素下标为top - 1
+    
+    int ret = 0;
+    int i = 0;
+    while (i < n) { //遍历整个字符串
+        if (s[i] == ' ') {
+            //如果为空字符，什么都不处理，继续i++
+            i++;
+        } else if (s[i] == '+') {
+            //如果是加号,取栈顶元素更新sign
+            sign = stack[top - 1];
+            i++;
+        } else if (s[i] == '-') {
+            //如果是加号,取栈顶元素更新sign为负
+            sign = -stack[top - 1];
+            i++;
+        } else if (s[i] == '(') {
+            //如果是( 入栈
+            stack[top++] = sign;
+            i++;
+        } else if (s[i] == ')') {
+            top--; //出栈是更新top指针
+            i++;
+        } else {
+            //如果是数字 i < n判断有没越界，因为如果是连续数字1233，有可能越界
+            // num * 10 因为数字有可能是多位数，例如123
+            //s[i] - '0' //取出当前位置数字与'0'做差值得出数字的值
+            long num = 0;
+            while (i < n && s[i] >= '0' && s[i] <= '9') {
+                num = num * 10 + s[i] - '0';
+            }
+            // 要乘以 ( 前面的操作符号
+            ret += sign * num;
+        }
+    }
+    return ret;
+}
