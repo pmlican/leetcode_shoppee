@@ -176,6 +176,7 @@ int calculate(char * s){
             long num = 0;
             while (i < n && s[i] >= '0' && s[i] <= '9') {
                 num = num * 10 + s[i] - '0';
+                i++; //这里记得i++ 继续遍历
             }
             // 要乘以 ( 前面的操作符号
             ret += sign * num;
@@ -183,3 +184,132 @@ int calculate(char * s){
     }
     return ret;
 }
+
+//MARK: 152. 乘积最大子数组
+/*
+ 动态规划: 因为负数存在，负负得正，会导致最大的变最小，最小的变最大。所以需要维护一个最小的子数组和最大的子数组
+ maxF(i) = max(maxF(i-1) * a[i], minF(i-1) * a[i], a[i])
+ minF(i) = max(maxF(i-1) * a[i], minF(i-1) * a[i], a[i])
+ */
+//WARN: 符号优先级问题, 嵌套使用要注意: max(a, b) a > b ? a : b 不加括号会有问题 math自带的fmax也会有问题
+#define max(a, b) ((a) > (b)) ? (a) : (b)
+#define min(a, b) ((a) < (b)) ? (a) : (b)
+
+int maxProduct(int* nums, int numsSize){
+    int maxF[numsSize], minF[numsSize];
+    memcpy(maxF, nums, sizeof(int) * numsSize);
+    memcpy(minF, nums, sizeof(int) * numsSize);
+    for (int i = 1; i < numsSize; i++) {
+        maxF[i] = max(maxF[i - 1] * nums[i], max(nums[i], minF[i - 1] * nums[i]));
+        minF[i] = min(maxF[i - 1] * nums[i], max(nums[i], minF[i - 1] * nums[i]));
+//        if (nums[i] > 0) {
+//            maxF[i] = fmax(maxF[i - 1] * nums[i], nums[i]);
+//            minF[i] = fmin(minF[i - 1] * nums[i], nums[i]);
+//        } else {
+//            maxF[i] = fmax(minF[i - 1] * nums[i], nums[i]);
+//            minF[i] = fmin(maxF[i - 1] * nums[i], nums[i]);
+//        }
+    }
+    int ans = maxF[0];
+    for (int i = 1; i < numsSize; i++) {
+        ans = fmax(ans, maxF[i]);
+    }
+    return ans;
+}
+// 滚动数组优化空间
+int maxProduct(int* nums, int numsSize){
+    int maxF = nums[0], minF = nums[0], ans = nums[0];
+    for(int i = 1; i < numsSize; ++i){
+        int mx = maxF, mn = minF;
+        maxF = fmax(mx * nums[i], fmax(nums[i], mn * nums[i]));
+        minF = fmin(mn * nums[i], fmin(nums[i], mx * nums[i]));
+        ans = fmax(maxF, ans);
+    }
+    return ans;
+}
+
+//MARK: 232. 用栈实现队列
+// 一个做输入栈，一个作输出栈，均摊时间复杂度为O(1)
+
+typedef struct {
+    int* stk; //数据域指针
+    int stkSize;  //当前栈顶指针
+    int stkCapacity; //栈容量
+} Stack;
+
+Stack* stackCreate(int cpacity) {
+    Stack* ret = malloc(sizeof(Stack));
+    ret->stk = malloc(sizeof(int) * cpacity);
+    ret->stkSize = 0;
+    ret->stkCapacity = cpacity;
+    return ret;
+}
+
+void stackPush(Stack* obj, int x) {
+    obj->stk[obj->stkSize++] = x;
+}
+
+void stackPop(Stack* obj) {
+    obj->stkSize--; //出栈就是向下移动stkSize
+}
+
+int stackTop(Stack* obj) {
+    return obj->stk[obj->stkSize - 1]; //返回栈顶元素
+}
+
+bool stackEmpty(Stack* obj) {
+    return obj->stkSize == 0;
+}
+
+void stackFree(Stack* obj) {
+    free(obj->stk);
+}
+
+typedef struct {
+    Stack* inStack;
+    Stack* outStack;
+} MyQueue;
+
+MyQueue* myQueueCreate() {
+    MyQueue* ret = malloc(sizeof(MyQueue));
+    ret->inStack = stackCreate(100);
+    ret->outStack = stackCreate(100);
+    return ret;
+}
+
+void in2out(MyQueue* obj) {
+    while (!stackEmpty(obj->inStack)) {
+        stackPush(obj->outStack, stackTop(obj->inStack)); //输入栈元素压入输出栈
+        stackPop(obj->inStack); //输入栈元素出栈
+    }
+}
+
+void myQueuePush(MyQueue* obj, int x) {
+    stackPush(obj->inStack, x);
+}
+
+int myQueuePop(MyQueue* obj) {
+    if (stackEmpty(obj->outStack)) {
+        in2out(obj);  //当输出栈元素为空时，把输入栈元素压入输出栈
+    }
+    int x = stackTop(obj->outStack); //返回栈顶元素
+    stackPop(obj->outStack); //出栈
+    return x;
+}
+
+int myQueuePeek(MyQueue* obj) {
+    if (stackEmpty(obj->outStack)) {
+        in2out(obj); //peek的时候也要判断输出栈是否为空，因为有可能pop的时候是最后一个
+    }
+    return stackTop(obj->outStack);
+}
+
+bool myQueueEmpty(MyQueue* obj) {
+    return stackEmpty(obj->inStack) && stackEmpty(obj->outStack);
+}
+
+void myQueueFree(MyQueue* obj) {
+    stackFree(obj->inStack);
+    stackFree(obj->outStack);
+}
+
