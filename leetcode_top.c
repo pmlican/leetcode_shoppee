@@ -313,3 +313,152 @@ void myQueueFree(MyQueue* obj) {
     stackFree(obj->outStack);
 }
 
+//MARK: 102. 二叉树的层序遍历
+/*
+ [3,9,20,null,null,15,7] ==>
+      3
+    /  \
+   9   20
+      /   \
+     15   7
+ [
+   [3],
+   [9,20],
+   [15,7]
+ ]
+ */
+/*
+ 1. int ** rslt 指针的指针，表示int*指针数组  int* | int*
+                                        |
+                                        v
+                                      [int, int]
+ 2. 为什么不能直接int resunlt[][]?
+ 因为我们在函数中通过int result[][]的内存空间在程序的栈区，当被调函数结束运行后，
+ 栈区的内存随之被释放，该result二维数组并不能被返回到主调函数中去。而通过malloc申
+ 请的内存空间位于堆区，当被调函数执行结束后，可以通过指针将该二维数组传递到函数外面
+ */
+
+int** levelOrder(struct TreeNode* root, int* returnSize, int** returnColumnSizes){
+    *returnSize = 0; //这句话要放在return null前面，在调用函数时，如果返回值如果是一个常量则没问题。如果返回值若为指针则可能会出现该错误，假如返回的指针地址指向函数内的局部变量，在函数退出时，该变量的存储空间会被销毁，此时去访问该地址就会出现这个错误。
+    if (root == NULL) {
+        return NULL;
+    }
+    //初始化变量操作
+    int** res = (int**)malloc(sizeof(int*) * 2000);  // 二维 数组
+    *returnColumnSizes = (int*)malloc(sizeof(int) * 2000);  // 一维数组：[returnColumnSizes] 列数组
+    struct TreeNode* queue[2000]; //队列
+    int front = 0, rear = 0; //队首和对尾指针
+    struct TreeNode* cur;
+    queue[rear++] = root; // root入队
+    while (front != rear) { // 队列不为空
+        int colSize = 0;
+        int last = rear; //求当前队列的长度si
+        res[*returnSize] = (int*)malloc(sizeof(int) * (last - front)); //实例化一维数组，存每一level的数据
+        while(front < last) {//依次从队列中取si个元素进行拓展，然后进入下一次迭代
+            cur = queue[front++]; //出队
+            res[*returnSize][colSize++] = cur->val; //放入没一level的数组中
+            if (cur->left != NULL) {
+                queue[rear++] = cur->left; //入队
+            }
+            if (cur->right != NULL) {
+                queue[rear++] = cur->right;
+            }
+        }
+        //上面两个参数用来描述这个结果，以便调用者打印树的形态
+        (*returnColumnSizes)[*returnSize] = colSize;  //这个参数用来“带回”每层的结点个数
+        ++(*returnSize); //这个参数用来“带回”层数
+    }
+    return res;
+}
+
+
+//MARK: 69. Sqrt(x) x 的平方根
+//方法一: 二分法， 扩展： 要求精确到6位数
+
+int mySqrt(int x) {
+    int l = 0, r = x, ans = -1;
+    while (l <= r) {
+        int mid = l + (r - l) / 2;
+        if ((long)mid * mid <= x) {  //long防止溢出
+            ans = mid;
+            l = mid + 1;
+        } else {
+            r = mid - 1;
+        }
+    }
+    return ans;
+}
+
+int mySqrt(double x, double epsilon) {
+    double l = 0, r = x;
+    if (x == 0 || x == 1) {
+        return x;
+    }
+    while (left < right) {
+        double mid = l + (r - l) / 2;
+        if (fabs(mid * mid - x) < epsilon) {
+            return mid;
+        } else if (mid * mid < x) {
+            left = mid;
+        } else {
+            right = mid;
+        }
+    }
+    return left;
+}
+
+//牛顿迭代法 等价于 求 f(x) = x^2 - a 的正根， 因为f'(x) = 2x, 根据斜截式求出x轴交点为  x - f(x)/2x , f(x)代入得
+//（x + a/x) / 2
+
+double newtonSqrt(int a) {
+    long x = a;
+    while (x * x > a) {
+        x = (x + a / x) / 2;
+    }
+    return (int)x;
+}
+
+//MARK: 912. 排序数组： 归并排序
+
+
+/*
+ 1. 先二分数组直到元素不能再分
+ 2. 两两合并为一个有序的数组
+ */
+
+void merge(int* nums, int l, int mid, int r) {
+    int *temp = (int *)malloc(sizeof(int) * (r - l + 1));
+    int i = l, j = mid + 1, k = l;
+    while(i != mid + 1 && j != r + 1) {
+        if (nums[i] > nums[j]) {
+            temp[k++] = nums[j++];
+        } else {
+            temp[k++] = nums[i++];
+        }
+    }
+    while (i != mid + 1) {
+        temp[k++] = nums[i++];
+    }
+    while (j != r + 1) {
+        temp[k++] = nums[j++];
+    }
+    //拷贝回原数组
+    memcpy(nums + l, temp, sizeof(int) * (r - l + 1));
+    free(temp);
+}
+
+void mergeSort(int *nums, int l, int r) {
+    if (l < r) {
+        int mid = l + (r - l) / 2;
+        mergeSort(nums, l, mid);
+        mergeSort(nums, mid + 1, r);
+        merge(nums, l, mid, r);
+    }
+}
+//暂时还有问题
+int* sortArray(int* nums, int numsSize, int* returnSize){
+    mergeSort(nums, 0, numsSize - 1);
+    *returnSize = numsSize;
+    return nums;
+}
+
