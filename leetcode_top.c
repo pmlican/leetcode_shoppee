@@ -426,8 +426,7 @@ double newtonSqrt(int a) {
  2. 两两合并为一个有序的数组
  */
 
-void merge(int* nums, int l, int mid, int r) {
-    int *temp = (int *)malloc(sizeof(int) * (r - l + 1));
+void merge(int* nums, int* temp, int l, int mid, int r) {
     int i = l, j = mid + 1, k = l;
     while(i != mid + 1 && j != r + 1) {
         if (nums[i] > nums[j]) {
@@ -443,21 +442,25 @@ void merge(int* nums, int l, int mid, int r) {
         temp[k++] = nums[j++];
     }
     //拷贝回原数组
-    memcpy(nums + l, temp, sizeof(int) * (r - l + 1));
-    free(temp);
-}
-
-void mergeSort(int *nums, int l, int r) {
-    if (l < r) {
-        int mid = l + (r - l) / 2;
-        mergeSort(nums, l, mid);
-        mergeSort(nums, mid + 1, r);
-        merge(nums, l, mid, r);
+//    memcpy(nums + l, temp, sizeof(int) * (r - l + 1));
+    for (int i = l; i <= r; i++) {
+        nums[i] = temp[i];
     }
 }
-//暂时还有问题
+
+void mergeSort(int *nums, int *temp, int l, int r) {
+    if (l < r) {
+        int mid = l + (r - l) / 2;
+        mergeSort(nums, temp, l, mid);
+        mergeSort(nums, temp, mid + 1, r);
+        merge(nums, temp, l, mid, r);
+    }
+}
+
 int* sortArray(int* nums, int numsSize, int* returnSize){
-    mergeSort(nums, 0, numsSize - 1);
+    // int* temp = (int*)malloc(sizeof(int) * numsSize);
+    int temp[numsSize];
+    mergeSort(nums, temp, 0, numsSize - 1);
     *returnSize = numsSize;
     return nums;
 }
