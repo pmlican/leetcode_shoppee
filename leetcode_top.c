@@ -465,3 +465,83 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
     return nums;
 }
 
+//MARK: 41. 缺失的第一个正数
+/*
+ 哈希表法：没有出现的最小正整数在[1, N+1]，要么[1, N]或者 N + 1
+
+ */
+
+int firstMissingPositive(int* nums, int numsSize) {
+    //1.将所有负数改为n+1
+    for (int i = 0; i < numsSize; i++) {
+        if (nums[i] <= 0) {
+            nums[i] = numsSize + 1;
+        }
+    }
+    //2.将小于等于n的元素的位置变为负数
+    for (int i = 0; i < numsSize; i++) {
+        int num = abs(nums[i]);
+        if (num <= numsSize) { //判断越界
+            num[num - 1] = -abs(nums[num - 1]);
+        }
+    }
+    //3.找出第一个大于0的元素下标加1
+    for (int i = 0; i < numsSize; i++) {
+        if (nums[i] > 0) {
+            return i + 1;
+        }
+    }
+    //否则返回n + 1
+    return numsSize + 1;
+}
+
+//MARK: 14. 最长公共前缀
+/*
+ leets
+ leetcode
+ leet
+ leeds
+    ^
+ 通过纵向比较，如果第一个不相同字符则返回最长公共前缀
+ */
+
+char * longestCommonPrefix(char ** strs, int strsSize){
+    if (strsSize == 0) {
+        return "";
+    }
+    for (int i = 0; i < strlen(strs[0]); i++) { //纵向遍历字符数组
+        for (in j = 0; j < strsSize; j++) {
+            if (strs[j][i] != strs[0][i]) { //与的一个字符串同列字符不相同
+                strs[0][i] = '\0'; //截断字符
+                return strs[0];
+            }
+        }
+    }
+    return strs[0]; //全部符合则第一个字符串即为最长公共前缀
+}
+
+//MARK: 160. 相交链表
+/*
+ a1->a2->c1->c2->c3
+          |
+ b1->b2->b3
+ 
+ 
+ a单独节点个数为a, b单独节点个数为b, a和b共同节点为c
+ a + c + b = b + c + a
+ 双指针把a走完，然后移动到b
+ 把b走完，然后移动到a
+ 然后在交点交汇
+ */
+
+struct ListNode *getIntersectionNode(struct ListNode *headA, struct ListNode *headB) {
+    if (headA == NULL || headB == NULL) { //边界条件判断
+        return NULL;
+    }
+    struct ListNode *pA = headA, *pB = headB; //定义双指针
+    while (pA != pB) { // 如果pA和pB不等，就意味着不是相交点或都为NULL
+        pA = pA == NULL ? headB : pA->next;  // 移动pA指针，当走到尾部，移动headB
+        pB = pB == NULL ? headA : pB->next; //pB指针同理
+    }
+    return pA; //返回pA或者pB都可以
+}
