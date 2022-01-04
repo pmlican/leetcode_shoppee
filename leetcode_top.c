@@ -428,17 +428,17 @@ double newtonSqrt(int a) {
 
 void merge(int* nums, int* temp, int l, int mid, int r) {
     int i = l, j = mid + 1, k = l;
-    while(i != mid + 1 && j != r + 1) {
+    while(i <= mid && j <= r) {
         if (nums[i] > nums[j]) {
             temp[k++] = nums[j++];
         } else {
             temp[k++] = nums[i++];
         }
     }
-    while (i != mid + 1) {
+    while (i <= mid) {
         temp[k++] = nums[i++];
     }
-    while (j != r + 1) {
+    while (j <= r) {
         temp[k++] = nums[j++];
     }
     //拷贝回原数组
@@ -450,7 +450,8 @@ void merge(int* nums, int* temp, int l, int mid, int r) {
 
 void mergeSort(int *nums, int *temp, int l, int r) {
     if (l < r) {
-        int mid = l + (r - l) / 2;
+//        int mid = l + (r - l) / 2;
+        int mid = (l + r) >> 1;
         mergeSort(nums, temp, l, mid);
         mergeSort(nums, temp, mid + 1, r);
         merge(nums, temp, l, mid, r);
