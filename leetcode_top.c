@@ -627,28 +627,42 @@ int* preorderTraversal(struct TreeNode* root, int* returnSize){
 //MARK: 54. 螺旋矩阵
 //螺旋矩阵，转圈遍历
 int* spiralOrder(int** matrix, int matrixSize, int* matrixColSize, int* returnSize){
+    //边界判断
+    if (matrixSize == 0 || matrixColSize[0] == 0) {
+        *returnSize = 0;
+        return NULL;
+    }
+    
+    //计算元素总个数
     int rows = matrixSize, column = matrixColSize[0];
     int total = rows * column;
     int *res = malloc(sizeof(int) * total);
     *returnSize = 0;
     
+    //定义左右上下边界
     int l = 0, r = column - 1, t = 0, b = rows - 1;
-    while(num <= total) {
+    while(l <= r && t <= b) {
+        //左到右
         for (int i = l; i <= r; i++) {
-            res
+            res[(*returnSize)++] = matrix[t][i];
         }
-        t++;
-        for (int i = t; i <= b; i++) {
-            
+        //右到下
+        for (int i = t + 1; i <= b ; i++) {
+            res[(*returnSize)++] = matrix[i][r];
         }
-        r--;
-        for (int i = r; i >= l; i--) {
-            
-        }
-        b--;
-        for (int i = l; i >= t; i--) {
-            
+        //因为边界在++或者--， 右到左和下到上，边界减小1
+        if(l < r && t < b) { //不是while
+            for (int i = r - 1; i > l; i--) {
+                res[(*returnSize)++] = matrix[b][i];
+            }
+            for (int i = b; i > t; i--) {
+                res[(*returnSize)++] = matrix[i][l];
+            }
         }
         l++;
+        r--;
+        t++;
+        b--;
     }
+    return res;
 }
