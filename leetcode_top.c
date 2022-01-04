@@ -546,3 +546,109 @@ struct ListNode *getIntersectionNode(struct ListNode *headA, struct ListNode *he
     }
     return pA; //返回pA或者pB都可以
 }
+
+//MARK: 53. 最大子数组和
+#define max(a, b) ((a) > (b)) ? (a) : (b)
+
+int maxSubArray(int* nums, int numsSize){
+    //f(i) = max{f(i-1) + nums[i], nums[i]}
+    int pre = 0, maxAns = nums[0];
+    for(int i = 0; i < numsSize; i++) {
+        pre = max(pre + nums[i], nums[i]);
+        maxAns = max(maxAns, pre);
+    }
+    return maxAns;
+}
+
+//MARK: 206. 反转链表
+// 头插法
+struct ListNode* reverseList(struct ListNode* head){
+    struct ListNode *pre = NULL, *cur = head;
+    while (cur != NULL) {
+        struct ListNode* next = cur->next;
+        cur->next = pre;
+        pre = cur;
+        cur = next;
+    }
+    return pre;
+}
+//递归法
+struct ListNode* reverseList(struct ListNode* head){
+    if (head == NULL || head->next == NULL) {
+        return head;
+    }
+    struct ListNode *newNode = reverseList(head->next);
+    head->next->next = head;
+    head->next = NULL;
+    return newNode;
+}
+
+//MARK: 110. 平衡二叉树
+
+// height: 1. p为空   0
+//         2. p为为空   max{height(p.left), height(p.right)} + 1
+//辅助函数获取高度
+int height(struct TreeNode *root) {
+    if (root == NULL) {
+        return 0;
+    } else {
+        return fmax(height(root->left), height(root->right)) + 1;
+    }
+}
+
+bool isBalanced(struct TreeNode* root){
+    if (root == NULL) {
+        return true;
+    } else {
+        return fabs(height(root->left) - height(root->right)) <= 1 && isBalanced(root->left) && isBalanced(root->right);
+    }
+}
+
+//MARK: 144. 二叉树的前序遍历
+//辅助函数递归根左右
+
+void preorder(struct TreeNode *root, int *res, int *resSize) {
+    if (root == NULL) {
+        return;
+    }
+    //根左右
+    res[(*resSize)++] = root->val;
+    preorder(root->left, res, resSize);
+    preorder(root->right, res, resSize);
+}
+
+int* preorderTraversal(struct TreeNode* root, int* returnSize){
+    int *res = malloc(sizeof(int) * 2000);
+    *returnSize = 0;
+    preorder(root, res, returnSize);
+    return res;
+}
+
+//MARK: 54. 螺旋矩阵
+//螺旋矩阵，转圈遍历
+int* spiralOrder(int** matrix, int matrixSize, int* matrixColSize, int* returnSize){
+    int rows = matrixSize, column = matrixColSize[0];
+    int total = rows * column;
+    int *res = malloc(sizeof(int) * total);
+    *returnSize = 0;
+    
+    int l = 0, r = column - 1, t = 0, b = rows - 1;
+    while(num <= total) {
+        for (int i = l; i <= r; i++) {
+            res
+        }
+        t++;
+        for (int i = t; i <= b; i++) {
+            
+        }
+        r--;
+        for (int i = r; i >= l; i--) {
+            
+        }
+        b--;
+        for (int i = l; i >= t; i--) {
+            
+        }
+        l++;
+    }
+}
