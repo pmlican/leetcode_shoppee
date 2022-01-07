@@ -52,12 +52,23 @@ int findKthLargest(int* nums, int numsSize, int k){
 }
 
 //MARK: 88. 合并两个有序数组 (逆向双指针)
-
+//逆向双指针避免数组拷贝
 void merge(int* nums1, int nums1Size, int m, int* nums2, int nums2Size, int n){
-
+    int p1 = m - 1, p2 = n - 1, tail = m + n - 1;
+    int cur;
+    while (p1 >= 0 || p2 >= 0) {
+        if (p1 == -1) {
+            cur = nums2[p2--]; //p1指针走完，nums2还有剩余
+        } else if (p2 == -1) {
+            cur = nums1[p1--];
+        } else (nums[p1] > nums[p2]) {
+            cur = nums1[p1--];
+        } else {
+            cur = nums2[p2--];
+        }
+        nums1[tail--] = cur;  //逆向防止被覆盖
+    }
 }
-
-
 
 
 //MARK: 94. 二叉树的中序遍历
@@ -666,3 +677,187 @@ int* spiralOrder(int** matrix, int matrixSize, int* matrixColSize, int* returnSi
     }
     return res;
 }
+
+
+//MARK: 剑指 Offer 22. 链表中倒数第k个节点
+//方法一：先遍历一遍获取链表节点个数，第二次遍历判断倒数第k个输出节点
+//方法二：双指针，先把快指针移动到k+1，然后快慢指针一起移动，当快指针为NULL时，慢指针刚好是倒数第k个节点
+
+struct ListNode* getKthFromEnd(struct ListNode* head, int k){
+    struct ListNode *fast = head; *slow = head;
+    while(fast && k > 0) {
+        fast = fast->next;
+        k--;
+    }
+    while(fast) {
+        fast = fast->next;
+        slow = slow->next;
+    }
+    return slow;
+}
+
+//MARK: 300. 最长递增子序列
+
+// 动态规划
+/*
+input  10 9 2 5 3 7 101
+ dp    1  1 1 2 2 3 4
+ 
+ dp[i] = max{dp[j]} + 1  0 <= j < i 且 nums[j] < nums[i]
+ 然后取 ans = max{ dp[i] }
+ 
+ */
+
+int lengthOfLIS(int* nums, int numsSize){
+    if (numsSize == 0) {
+        return 0;
+    }
+    int dp[numsSize]; //在栈上，但不需要返回出去，所以不需要申请堆空间的数组
+    dp[0] = 1;
+    int ans = 1;
+    for (int i = 1; i < numsSize; i++) {
+        dp[i] = 1; //赋值为1，不然里面数据为脏数据
+        for (int j = 0; j < i; j++) {
+            if (nums[j] < nums[i]) {
+                dp[i] = fmax(dp[i], dp[j] + 1);
+            }
+        }
+        ans = fmax(ans, dp[i]);
+    }
+    return ans;
+}
+
+//方法二： 贪心算法 + 二分查找，优化为nlogn
+//贪心：如果要上升子序列尽可能小，那每次上升子序列最后加上的数尽可能小
+/*
+1. 如果 nums[i] > d[len], 则直接加入数组末尾，并更新len += 1;
+2. 否则，在d数组中二分查找，找到第一个比nums[i]小的数d[k],并更新d[k+1] = nums[i];
+ 以输入序列 [0, 8, 4, 12, 2][0,8,4,12,2] 为例
+ 第一步插入 0，d = [0]
+ 第二步插入 8，d = [0, 8]
+ 第三步插入 4，d = [0, 4]
+ 第四步插入 12，d = [0, 4, 12]
+ 第五步插入 2，d = [0, 2, 12]
+ */
+
+int lengthOfLIS(int* nums, int numsSize) {
+    if (numsSize == 0) {
+        return 0;
+    }
+    int len = 1;
+    int d[numsSize + 1]; // 下标从1开始，后续直接返回len不用+1操作
+    d[len] = nums[0];
+    for (int i = 1; i < numsSize; i++) {
+        if (nums[i] > d[len]) {
+            d[++len] = nums[i]; // len先+1，然后赋值
+        } else {
+            // 二分查找
+            int l = 1, r = len, pos = 0;
+            while(l <= r) {
+                int mid = (l + r) >> 1;
+                if (d[mid] < nums[i]) {
+                    pos = mid;
+                    l = mid + 1; //在右边
+                } else {
+                    r = mid - 1; //在左边
+                }
+            }
+            d[pos + 1] = nums[i];
+        }
+    }
+    return len;
+}
+
+//MARK: 146. LRU 缓存
+//哈希表+双向链表
+// 靠近头部最近使用，靠近尾部最久未使用
+//通过hashtable实现O(1)插入和查询
+/*
+ cache: 1 : 1
+        2 : 2
+ 
+ head -> 2 -> 1 -> tail
+      <-   <-   <-
+ 
+ 因为用c语言实现hashtable代码量大，可以使用c语言优秀库uthash底层本身就是用双向链表实现的hash来实现
+ */
+
+/*
+class DLinkedNode {
+    var key: Int
+    var value: Int
+    var pre: DLinkedNode?
+    var next: DLinkedNode?
+    init(_ key: Int, _ val: Int) {
+        self.key = key
+        self.value = val
+    }
+}
+
+class LRUCache {
+    var cache = [Int: DLinkedNode]()
+    var count: Int = 0
+    var capacity: Int
+    let head = DLinkedNode(0, 0)
+    let tail = DLinkedNode(0, 0)
+    
+    init(_ capacity: Int) {
+        self.capacity = capacity
+        head.next = tail
+        tail.pre = head
+    }
+    func remove(_ key: Int) {
+        guard count > 0, let node = cache[key] else {
+            return
+        }
+        cache[key] = nil
+        //双向断开连接
+        node.pre?.next = node.next
+        node.next?.pre = node.pre
+        node.pre = nil
+        node.next = nil
+        count -= 1
+    }
+    //头插法
+    func insert(_ node: DLinkedNode) {
+        cache[node.key] = node
+        //在头部插入
+        //head的下一个连接node
+        node.next = head.next
+        head.next?.pre = node
+        //node连接head
+        node.pre = head
+        head.next = node
+        count += 1
+    }
+    
+    func get(_ key: Int) -> Int {
+        if let node = cache[key] {
+            // 删除并插入，相当于移动到头部
+            remove(key)
+            insert(node)
+            return node.value
+        }
+        return -1
+    }
+    func put(_ key: Int, _ value: Int) {
+        if let node = cache[key] {
+            //如果存在，更新值，并移动到头部
+            node.value = value
+            remove(key)
+            insert(node)
+            return
+        }
+        let node = DLinkedNode(key, value)
+        cache[key] = node
+        //如果已经满了，移除最后一个node
+        if count == capacity, let tailKey = tail.pre?.key {
+            remove(tailKey)
+        }
+        //插入到头部
+        insert(node)
+    }
+}
+*/
+
+//MARK:
