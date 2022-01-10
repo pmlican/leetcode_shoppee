@@ -154,7 +154,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
 int calculate(char * s){
     int n = strlen(s); //获取字符长度
-    int stack[n]; //定义一个栈，存放操作符号，如果是+ 则为+1，如果为- 则为-1
+    int stack[n]; //定义一个栈，存放操作符号，如果是+ 则为+1，如果为- 则为-1 //用一个栈来存操作符，操作符 < n，保证不会溢出
     int top = 0;
     int sign = 1; //定义操作符
     stack[top++] = sign; //默认为+，并更新top, 栈顶元素下标为top - 1
@@ -178,15 +178,15 @@ int calculate(char * s){
             stack[top++] = sign;
             i++;
         } else if (s[i] == ')') {
-            top--; //出栈是更新top指针
+            top--; //出栈是更新top指针 //操作符出栈，不用删除元素，因为维护top指针就可以，新来的值会覆盖旧值
             i++;
         } else {
             //如果是数字 i < n判断有没越界，因为如果是连续数字1233，有可能越界
             // num * 10 因为数字有可能是多位数，例如123
             //s[i] - '0' //取出当前位置数字与'0'做差值得出数字的值
-            long num = 0;
-            while (i < n && s[i] >= '0' && s[i] <= '9') {
-                num = num * 10 + s[i] - '0';
+            long num = 0; //因为数字可能会联系，做*10操作
+            while (i < n && s[i] >= '0' && s[i] <= '9') { //i < n 防止越界，因为下面在i++
+                num = num * 10 + s[i] - '0'; //s[i] - '0'计算字符ascii差值
                 i++; //这里记得i++ 继续遍历
             }
             // 要乘以 ( 前面的操作符号
@@ -200,7 +200,7 @@ int calculate(char * s){
 /*
  动态规划: 因为负数存在，负负得正，会导致最大的变最小，最小的变最大。所以需要维护一个最小的子数组和最大的子数组
  maxF(i) = max(maxF(i-1) * a[i], minF(i-1) * a[i], a[i])
- minF(i) = max(maxF(i-1) * a[i], minF(i-1) * a[i], a[i])
+ minF(i) = min(maxF(i-1) * a[i], minF(i-1) * a[i], a[i])
  */
 //WARN: 符号优先级问题, 嵌套使用要注意: max(a, b) a > b ? a : b 不加括号会有问题 math自带的fmax也会有问题
 #define max(a, b) ((a) > (b)) ? (a) : (b)
@@ -227,10 +227,11 @@ int maxProduct(int* nums, int numsSize){
     }
     return ans;
 }
-// 滚动数组优化空间
+// 滚动数组优化空间 这里不会有符号嵌套问题，但最好自己实现max和min
 int maxProduct(int* nums, int numsSize){
     int maxF = nums[0], minF = nums[0], ans = nums[0];
     for(int i = 1; i < numsSize; ++i){
+        //可以用滚动数组实现，最大和最小变量,取出上一个max,和min
         int mx = maxF, mn = minF;
         maxF = fmax(mx * nums[i], fmax(nums[i], mn * nums[i]));
         minF = fmin(mn * nums[i], fmin(nums[i], mx * nums[i]));
@@ -241,6 +242,7 @@ int maxProduct(int* nums, int numsSize){
 
 //MARK: 232. 用栈实现队列
 // 一个做输入栈，一个作输出栈，均摊时间复杂度为O(1)
+//每次 pop 或 peek 时，若输出栈为空则将输入栈的全部数据依次弹出并压入输出栈，这样输出栈从栈顶往栈底的顺序就是队列从队首往队尾的顺序。
 
 typedef struct {
     int* stk; //数据域指针
