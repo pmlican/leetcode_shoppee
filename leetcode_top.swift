@@ -493,3 +493,48 @@ class Solution {
         return res[res.count - k]
     }
 }
+
+//MARK: 142. 环形链表 II  返回第一个入环节点
+//根据归纳计算得出 a = c + (n-1)(b+c)  fast和slow指针相遇时，slow指针和从起点出发的指针ptr在入口相遇
+
+func detectCycle(_ head: ListNode?) -> ListNode? {
+    var fast = head
+    var slow = head
+    while(true) { //fast跑圈，因为可能要跑n圈才能交汇
+        // fast?.next 表示刚好在尾节点，下个节点为空，少循环一次
+        if (fast == nil || fast?.next == nil) {
+            return nil
+        }
+        fast = fast?.next?.next
+        slow = slow?.next
+        if (fast == slow)  {
+            break
+        }
+    }
+    //重复利用fast指针
+    fast = head
+    while (slow != fast) {
+        slow = slow?.next
+        fast = fast?.next
+    }
+    return fast
+}
+
+//简洁版代码
+func detectCycle(_ head: ListNode?) -> ListNode? {
+  var fast = head
+  var slow = head
+  while fast != nil {
+    slow = slow?.next
+    fast = fast?.next?.next
+    if fast === slow {
+      fast = head
+      while fast !== slow {
+        fast = fast?.next
+        slow = slow?.next
+      }
+      return fast
+    }
+  }
+  return nil
+}
