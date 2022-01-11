@@ -362,3 +362,134 @@ func validateStackSequences(_ pushed: [Int], _ popped: [Int]) -> Bool {
     }
     return stack.isEmpty
 }
+
+//MARK: 141. 环形链表
+//快慢指针，慢指针走一步，快指针走两步
+//注意慢指针在head, 快指针在head.next，因为这样才能while走起来，
+//相当于第一次都在虚节点出发，然后慢指针走一步到head，快指针走两步到head.next
+func hasCycle(_ head: ListNode?) -> Bool {
+    if (head == nil || head?.next == nil) {
+        return false
+    }
+    var slow = head
+    var fast = head?.next
+    while (fast !== slow) {
+        //fast == nil只判断这个也行，这个是为了节点单数，或者双数节点，链表走完
+        if (fast == nil || fast?.next == nil) {
+            return false
+        }
+        slow = slow?.next
+        fast = fast?.next?.next
+    }
+    return true
+}
+
+//MARK: 226. 翻转二叉树
+
+func invertTree(_ root: TreeNode?) -> TreeNode? {
+    if (root == nil) {
+        return nil
+    }
+    let left = invertTree(root?.left)
+    let right = invertTree(root?.right)
+    root?.left = right
+    root?.right = left
+    return root
+}
+
+
+//MARK: 704. 二分查找
+
+func search(_ nums: [Int], _ target: Int) -> Int {
+    var l = 0
+    var r = nums.count - 1
+    while(l <= r) {
+        let mid = (r - l) / 2 + l
+        let num = nums[mid]
+        if (num == target) {
+            return mid
+        } else if (num > target) {
+            r = mid - 1
+        } else {
+            l = mid + 1
+        }
+    }
+    return -1
+}
+
+//MARK: 2. 两数相加
+//因为逆序相加，然后返回也是逆序，所以直接对应位置相加，然后维护一个进位carry
+
+//因为要返回一个链表，所以需要维护一个head指针，尾指针tail用来拼接链表
+
+//国际站优秀递归解法
+class Solution {
+    private var anchor = 0
+    func addTwoNumbers(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {
+        if l1 == nil && l2 == nil && anchor == 0 { return nil }
+        let sum = (l1?.val ?? 0) + (l2?.val ?? 0) + anchor
+        anchor = sum / 10
+        let node: ListNode? = ListNode(sum % 10, addTwoNumbers(l1?.next, l2?.next))
+        return node
+    }
+}
+
+func addTwoNumbers(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {
+    var l1: ListNode? = l1
+    var l2: ListNode? = l2
+    
+    var tail: ListNode? = ListNode(0) //head和tail在虚拟头节点
+    let head = tail
+    
+    var carry = 0
+    while l1 != nil || l2 != nil || carry > 0 {
+        let n1 = l1?.val ?? 0
+        let n2 = l2?.val ?? 0
+        let sum = n1 + n2 + carry
+        carry = sum / 10
+        tail?.next = ListNode(sum % 10)
+        tail = tail?.next
+        l1 = l1?.next
+        l2 = l2?.next
+    }
+    
+    return head?.next //返回下个节点，head是虚拟头
+}
+
+//MARK: 剑指 Offer 54. 二叉搜索树的第k大节点
+
+//利用swift函数可以嵌套定义，避免用属性记录值
+//利用中序遍历逆序，然后返回第k大的元素
+class Solution {
+    func kthLargest(_ root: TreeNode?, _ k: Int) -> Int {
+        var count = 0
+        var res = 0
+        func dfs(_ root: TreeNode?) {
+            guard let root = root else { return }
+            dfs(root.right)
+            count += 1
+            if count == k {
+                res = root.val
+                return
+            }
+            dfs(root.left)
+        }
+        dfs(root)
+        return res
+    }
+}
+
+//中序遍历顺序，然后返回第k个元素，但需要额外空间O(n)
+class Solution {
+    func inorder(_ root: TreeNode?, _ res: inout [Int]) {
+        guard let node = root else { return }
+        inorder(node.left, &res)
+        res.append(node.val)
+        inorder(node.right, &res)
+    }
+    func kthLargest(_ root: TreeNode?, _ k: Int) -> Int {
+        var res: [Int] = []
+        inorder(root, &res)
+        return res[res.count - k]
+    }
+}
