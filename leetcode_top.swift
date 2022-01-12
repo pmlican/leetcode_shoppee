@@ -219,6 +219,7 @@ func sortArray(_ nums: [Int]) -> [Int] {
 
 }
 
+//重点是合并算法，子问题就是分区，然后子问题递归解决大问题，先递归后合并，然后不是原地排序，需要额外临时数组
 func merge(lPie: [Int], rPie: [Int]) -> [Int] {
 
     var l = 0
@@ -254,6 +255,7 @@ func sortArray(_ nums: [Int]) -> [Int] {
     quickSort(&arr, 0, arr.count - 1)
     return arr
 }
+//重点是分区算法，子问题就是分区，然后子问题递归解决大问题，先分区后递归，是原地排序
 func quickSort(_ nums: inout [Int], _ l: Int, _ r: Int) {
     if (l > r) {
         return
@@ -312,7 +314,9 @@ let name = "King"
 let arr = Array(name)
 一般采取转成数组来操作
 */
+//MARK: 14. 最长公共前缀
 //参考leetcode国际站，最简洁的代码
+//纵向每个字符串对比
 func longestCommonPrefix(_ strs: [String]) -> String {
     if strs.isEmpty { return "" }
     var common = strs[0]
@@ -537,4 +541,78 @@ func detectCycle(_ head: ListNode?) -> ListNode? {
     }
   }
   return nil
+}
+
+//MARK: 3. 无重复字符的最长子串
+//滑动窗口,用set来判断是否有重复字符
+
+//用string的实例方法 contains比较慢
+//可以用dict来优化查找速度，因为用set操作不方便
+
+func lengthOfLongestSubstring(_ s: String) -> Int {
+    var map = [Character:Int]() //字典来跟踪字母的最后一次出现的索引
+    var result = 0  //记录结果
+    var l = -1 //左边界初始值
+    for (r, char) in s.enumerated(){
+        l = max(l, map[char] ?? -1) //更新左边界
+        result = max(result, r - l) //计算右减左
+        map[char] = r //更新字母最新的索引
+    }
+    return result
+
+}
+
+//这个运行速度差不多
+func lengthOfLongestSubstring2(_ s: String) -> Int {
+    var maxCount = 0
+    var array = [Character]()
+    for char in s {
+        if let index = array.firstIndex(of: char) {
+            //从0到i都删除掉, 不包括i,因为要求连续的子串
+            array.removeFirst(index+1) //更新左边界
+        }
+        array.append(char)// 更新右边界
+        maxCount = max(maxCount, array.count)
+    }
+    return maxCount
+}
+
+
+//MARK: 同构字符串
+func isIsomorphic(_ s: String, _ t: String) -> Bool {
+    var s2t: [Character: Character] = [:]
+    var t2s: [Character: Character] = [:]
+
+    for (i,_) in s.enumerated() {
+        // 这种字符串取下标，会导致时间过长。通过转换成字符串数组解决
+        let x = s[s.index(s.startIndex, offsetBy: i)]
+        let y = t[t.index(t.startIndex, offsetBy: i)]
+        if (s2t[x] != nil && s2t[x] != y) || (t2s[y] != nil && t2s[y] != x){
+            return false
+        }
+        s2t[x] = y
+        t2s[y] = x
+    }
+    return true
+}
+
+//通过转成字符数组来解决分割数组问题
+func isIsomorphic1(_ s: String, _ t: String) -> Bool {
+    let sChars = Array(s)
+    let tChars = Array(t)
+    var s2t = [Character: Character]()
+    
+    for i in 0 ..< sChars.count {
+        if let char = s2t[sChars[i]] {
+            if char != tChars[i] {
+                return false
+            }
+        } else {
+            if s2t.values.contains(tChars[i]) {
+                return false
+            }
+            s2t[sChars[i]] = tChars[i]
+        }
+    }
+    return true
 }
