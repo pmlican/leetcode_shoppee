@@ -7,6 +7,139 @@ c语言是面向过程的，所以在实现字符串操作相对容易，但在�
 所以像实现LRU Cache用到双向链表和hashmap来实现，代码比较长
 */
 
+//MARK: 53. 最大子数组和
+//动态转移方程，就是递推公式，当前状态由上次状态转移，有时可以优化用滚动数组，即用一个变量来维护上一个结果
+
+func maxSubArray(_ nums: [Int]) -> Int {
+    //f(n) = max{f(n)+n, n}
+    var pre = 0
+    var ans = nums[0]
+    for n in nums {
+        pre = max(pre + n, n)
+        ans = max(pre, ans)
+    }
+    return ans
+}
+//MARK: 206. 反转链表
+func reverseList(_ head: ListNode?) -> ListNode? {
+    //头插法
+    var pre: ListNode? = nil
+    var cur = head
+    while cur != nil {
+        var next = cur?.next //取出next指针，因为要改变指针方向
+        cur?.next = pre  //翻转操作
+        pre = cur  //移动cur和next指针
+        cur = next
+    }
+    return pre
+}
+//递归法
+func reverseList(_ head: ListNode?) -> ListNode? {
+    //递归出口，当head.next为空，到链表最后一个。head == nil是判断传的是个nil
+    if head == nil || head?.next == nil {
+        return head
+    }
+    var newHead = reverseList(head?.next)
+    head?.next?.next = head  //这个里做翻转操作
+    head?.next = nil //这里防止出现循环链表，因为最后一个要为nil
+    return newHead
+}
+
+//MARK: 110. 平衡二叉树
+func isBalanced(_ root: TreeNode?) -> Bool {
+    if (root == nil) {
+        return true
+    } else {
+        //三个条件左右相差1，并且左子树和右子树都平衡
+        return abs(height(root?.left) - height(root?.right)) <= 1 && isBalanced(root?.left) && isBalanced(root?.right)
+    }
+}
+//辅助函数计算高度
+func height(_ root: TreeNode?) -> Int {
+    if root == nil {
+        return 0
+    } else {
+        return max(height(root?.left), height(root?.right)) + 1 //因为高度从1开始计算
+    }
+}
+
+/*
+ 1 2 3
+ 4 5 6
+ 7 8 9
+ 按层模拟: 123, 69, 8, 47, 5
+ 回字形一层一层遍历
+ */
+
+func spiralOrder(_ matrix: [[Int]]) -> [Int] {
+    guard !matrix.isEmpty else { return [] }
+    var l = 0
+    var r = matrix[0].count - 1
+    var t = 0
+    var b = matrix.count - 1
+    var res = [Int]()
+    while (l <= r && t <= b) {
+        for i in l...r {
+            res.append(matrix[t][i]) //把第一行加入到结果数组
+        }
+        //range注意上下界, 或者用stride(from:to:by:)不会有问题, 其他语言是用for来不会有这个问题
+        if t+1 > b { break }
+        for i in t+1...b { //上指针下移一个位置
+            res.append(matrix[i][r]) //把最后一列除了第一个，加入到结果数组
+        }
+        // 边界缩减了1，所以判断条件不能<=
+        if (l < r && t < b) { //因为边界在++或者--, 右到左，下到上边界减少1
+            for i in (l+1..<r).reversed() { //左右缩减1
+                res.append(matrix[b][i]) //列在变
+            }
+            for i in (t+1...b).reversed() {
+                res.append(matrix[i][l]) //行在变
+            }
+        }
+        //然后下一层
+        l += 1
+        r -= 1
+        t += 1
+        b -= 1
+    }
+    return res
+}
+/*
+ 1 2 3
+ 4 5 6
+ 7 8 9
+ */
+
+//转圈遍历  先 123, 69, 87, 5
+func spiralOrder(_ matrix: [[Int]]) -> [Int] {
+    guard !matrix.isEmpty else { return [] }
+    var l = 0
+    var r = matrix[0].count - 1
+    var t = 0
+    var b = matrix.count - 1
+    var n = matrix[0].count * matrix.count
+    var res = [Int]()
+    while res.count < n {
+        //to的元素不包含，如果使用range注意上下界， 例如：l...r l > r 会崩溃
+        for i in stride(from: l, to: r+1, by: 1) where res.count < n {
+            res.append(matrix[t][i])
+        }
+        t += 1
+        for i in stride(from: t, to: b+1, by: 1) where res.count < n {
+            res.append(matrix[i][r])
+        }
+        r -= 1
+        for i in stride(from: r, to: l-1, by: -1) where res.count < n {
+            res.append(matrix[b][i])
+        }
+        b -= 1
+        for i in stride(from: b, to: t-1, by: -1) where res.count < n {
+            res.append(matrix[i][l])
+        }
+        l += 1
+    }
+    return res
+}
 
 //MARK: 146. LRU 缓存
 //哈希表+双向链表
