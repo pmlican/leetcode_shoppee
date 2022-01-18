@@ -749,3 +749,115 @@ func isIsomorphic1(_ s: String, _ t: String) -> Bool {
     }
     return true
 }
+
+
+//MARK: 1. 两数之和
+//利用map记录差值 key为数组值， value为数组下标index
+func twoSum(_ nums: [Int], _ target: Int) -> [Int] {
+    var dict = [Int: Int]()
+    for (i, num) in nums.enumerated() {
+        if (dict[target - num] != nil) {
+            return [dict[target - num]!, i]
+        }
+        dict[num] = i
+    }
+    return []
+}
+
+//MARK: 合并两个有序链表
+
+//递归法，简洁加上可选绑定简化了解包
+func mergeTwoLists(_ list1: ListNode?, _ list2: ListNode?) -> ListNode? {
+    guard let list1 = list1 else {return list2}
+    guard let list2 = list2 else {return list1}
+    if list1.val < list2.val {
+        list1.next = mergeTwoLists(list1.next, list2)
+        return list1
+    } else {
+        list2.next = mergeTwoLists(list1, list2.next)
+        return list2
+    }
+}
+//双指针
+
+func mergeTwoLists(_ list1: ListNode?, _ list2: ListNode?) -> ListNode? {
+    
+    var l1 = list1
+    var l2 = list2
+    var newHead: ListNode? = ListNode(-1) //假的头结点 注意这里的类型为option
+    var pre = newHead
+    while (l1 != nil && l2 != nil) {
+        if l1!.val <= l2!.val {
+            pre?.next = l1
+            l1 = l1?.next
+        } else {
+            pre?.next = l2
+            l2 = l2?.next
+        }
+        pre = pre?.next
+    }
+    pre?.next = l1 ?? l2
+    return newHead?.next
+}
+
+//MARK: 300. 最长递增子序列
+
+// dp[i] = max{ dp[j] } + 1    j in 0..<i
+
+func lengthOfLIS(_ nums: [Int]) -> Int {
+    
+    var dp = [Int]()
+    //初始化dp数组为1，因为不像其他语言动态赋值 dp[i] = 1
+    dp = (0..<nums.count).map{_ in return 1 }
+    var ans = 1
+    for i in 1..<nums.count {
+        for j in 0..<i {
+            if nums[j] < nums[i] {
+                dp[i] = max(dp[i], dp[j] + 1)
+            }
+        }
+        ans = max(ans, dp[i])
+    }
+    return ans
+}
+
+//方法二： 贪心算法 + 二分查找，优化为nlogn
+//贪心：如果要上升子序列尽可能小，那每次上升子序列最后加上的数尽可能小
+/*
+1. 如果 nums[i] > d[len], 则直接加入数组末尾，并更新len += 1;
+2. 否则，在d数组中二分查找，找到第一个比nums[i]小的数d[k],并更新d[k+1] = nums[i];
+ 以输入序列 [0, 8, 4, 12, 2] 为例
+ 第一步插入 0，d = [0]
+ 第二步插入 8，d = [0, 8]
+ 第三步插入 4，d = [0, 4]
+ 第四步插入 12，d = [0, 4, 12]
+ 第五步插入 2，d = [0, 2, 12]
+ */
+
+func lengthOfLIS(_ nums: [Int]) -> Int {
+    // 有三种便捷初始化数组
+     var tails = (0..<nums.count).map {_ in return 0}
+    // var tails = [Int](repeating: 0, count: nums.count)
+    //注意这会初始化为这个 0 --- nums.count
+//    var tails = Array(0..<nums.count)
+    var res = 0
+    for num in nums {
+        var l = 0
+        var r = res
+        while l < r {
+            var m = (l + r) / 2
+            if (tails[m] < num) {
+                l = m + 1
+            } else {
+                r = m
+            }
+        }
+        tails[l] = num
+        if (res == r) {
+            res += 1
+        }
+    }
+    return res
+}
+
+
