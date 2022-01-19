@@ -843,7 +843,7 @@ func lengthOfLIS(_ nums: [Int]) -> Int {
     var res = 0
     for num in nums {
         var l = 0
-        var r = res
+        var r = res //这里不用减1，因为有可能是插入数组末尾
         while l < r {
             var m = (l + r) / 2
             if (tails[m] < num) {
@@ -852,7 +852,10 @@ func lengthOfLIS(_ nums: [Int]) -> Int {
                 r = m
             }
         }
+        //二分查找第一个 num比数组元素小的替换
+        // l或者r都可以
         tails[l] = num
+        //如果nums[i] > d[len], 则直接加入数组末尾，并更新len += 1
         if (res == r) {
             res += 1
         }
@@ -860,4 +863,99 @@ func lengthOfLIS(_ nums: [Int]) -> Int {
     return res
 }
 
+
+//MARK: 415. 字符串相加
+
+//模拟相加,字符串转成字符数组比较好处理
+
+func addStrings(_ num1: String, _ num2: String) -> String {
+    let s1 = Array(num1)
+    let s2 = Array(num2)
+    var i = s1.count - 1
+    var j = s2.count - 1
+    var add = 0
+    var ans = [Int]()
+    //当最后一位还有进位时，还要进入循环，把进位加上去
+    // 例如 1 + 9 的情况
+    while (i >= 0 || j >= 0 || add != 0) {
+        let x = i >= 0 ? Int(String(s1[i]))! - 0 : 0
+        let y = j >= 0 ? Int(String(s2[j]))! - 0 : 0
+        let res = x + y + add
+        ans.append(res % 10)
+        add = res / 10
+        i -= 1
+        j -= 1
+    }
+    //或者当最后一位还有进位时，后面补1
+    var str = ""
+    for s in ans.reversed() {
+        str += "\(s)"
+    }
+    return str
+}
+
+//MARK: 227. 基本计算器 II
+//s 由整数和算符 ('+', '-', '*', '/') 组成，中间由一些空格隔开
+//思路：利用栈保存乘除的值，遇到乘除与栈顶元素计算并更新栈顶元素，这样可以优先计算乘除，然后处理完乘除后再把栈的元素相加起来（如果是减就加上负数）
+
+func calculate(_ s: String) -> Int {
+    var stack = [Int]()
+    var num = 0
+    var op = "+"
+    let count = s.count //这里要把count提前计算，不然会超时，因为count会每次遍历一次才能得到
+    for (i,c) in s.enumerated() {
+        //因为字符可以是连续的，比如123
+        if c.isNumber {
+            num = num * 10 + Int(String(c))!
+        }
+        //判断i == count - 1处理最后一个字符
+        //注意op为记录当前数字的前一个操作符
+        if !c.isNumber && c != " " || i == count - 1 {
+            switch op {
+            case "+":
+                stack.append(num)
+            case "-":
+                stack.append(-num)
+            case "*":
+                stack.append(stack.removeLast() * num)
+            default:
+                stack.append(stack.removeLast() / num)
+            }
+            num = 0  //重置下num
+            op = String(c) //操作符要更新一次
+        }
+    }
+    return stack.reduce(0, +)
+}
+
+//MARK: 215. 数组中的第K个最大元素
+func findKthLargest(_ nums: [Int], _ k: Int) -> Int {
+    var nums = nums
+    return quickSelect(&nums, 0, nums.count - 1, nums.count - k)
+}
+
+func quickSelect(_ nums: inout [Int], _ l: Int, _ r: Int, _ index: Int) -> Int {
+    //随机一个数交换, 因为如果原来有序的数组会退化为O(n^2)
+    let random = Int.random(in: l...r)
+    (nums[random], nums[r]) = (nums[r], nums[random])
+
+    //下面做分区操作，去r位置的元素作为基准值
+    let x = nums[r]
+    // 定义i和j指针，分为三个区域,0..<i,为小区，i..<j为大区，j..<r为未查看
+    var i = l
+    for j in l..<r {
+        if (nums[j] <= x) {
+            (nums[j], nums[i]) = (nums[i], nums[j])
+            i += 1
+        }
+    }
+    //把基准的元素放到i的位置
+    (nums[r], nums[i]) = (nums[i], nums[r])
+    //区别在于这里，快排提前返回
+    if (i == index) {
+        return nums[i]
+    } else {
+        return i < index ? quickSelect(&nums, i + 1, r, index) : quickSelect(&nums, l, i - 1, index)
+    }
+}
 
