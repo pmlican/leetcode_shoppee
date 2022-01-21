@@ -554,6 +554,24 @@ func search(_ nums: [Int], _ target: Int) -> Int {
     return -1
 }
 
+//如果右边界是取不到的， r不能 mid - 1，然后循环条件是 l < r
+func search(_ nums: [Int], _ target: Int) -> Int {
+    var l = 0
+    var r = nums.count
+    while l < r {
+        let mid = (l + r) / 2
+        if nums[mid] == target {
+            return mid
+        } else if (nums[mid] < target) {
+            l = mid + 1
+        } else {
+            r = mid
+        }
+    }
+    return -1
+}
+
+
 //MARK: 2. 两数相加
 //因为逆序相加，然后返回也是逆序，所以直接对应位置相加，然后维护一个进位carry
 
