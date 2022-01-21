@@ -977,3 +977,22 @@ func quickSelect(_ nums: inout [Int], _ l: Int, _ r: Int, _ index: Int) -> Int {
     }
 }
 
+//MARK: 151. 翻转字符串里的单词
+//方法一：用系统api
+//方法二：自行实现对应的函数
+func reverseWords(_ s: String) -> String {
+    return s.split(separator: " ").reversed().joined(separator: " ")
+}
+
+//MARK: 1143. 最长公共子序列
+/*
+ 因为dp[i][j] 长度是+1的
+ 动态转移方程 dp[i][j] = dp[i-1][j-1] + 1                   text[i-1] = text[j-1]
+                      max{ dp[i-1][j], dp[i][j-1] }      text[i-1] != text[j -1]
+ 可以划个二维的表格表示
+ */
+func longestCommonSubsequence(_ text1: String, _ text2: String) -> Int {
+
+}
+
+//交错字符串
