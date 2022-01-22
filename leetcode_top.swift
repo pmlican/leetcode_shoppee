@@ -992,7 +992,56 @@ func reverseWords(_ s: String) -> String {
  可以划个二维的表格表示
  */
 func longestCommonSubsequence(_ text1: String, _ text2: String) -> Int {
+    let m = text1.count
+    let n = text2.count
+    var dp = Array(repeating: Array(repeating: 0, count: n + 1), count: m + 1)
+    let s1 = Array(text1)
+    let s2 = Array(text2)
+    for i in 1...m {
+        for j in 1...n {
+            if s1[i - 1] == s2[j - 1] {
+                dp[i][j] = dp[i - 1][j - 1] + 1
+            } else {
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+            }
+        }
+    }
+    return dp[m][n]
+}
+/*
+    "" b d c
+ ""  0 0 0 0
+ a   0 0 0 0
+ b   0 1 1 1
+ c   0 1 1 2
+ 
+ 每次计算新的一行的时候, 用到的都是上一行或者本行之前算过的数据（即为左，上，左上), 所以可以优化到一维数组
+ 就是dp取最后一行，降为一维数组
+ 注意：左上角的数据会被覆盖掉，需要用
+ */
 
+//优化空间为一维
+func longestCommonSubsequence(_ text1: String, _ text2: String) -> Int {
+    let m = text1.count
+    let n = text2.count
+    var dp = Array(repeating: 0, count: n + 1)
+    var temp = 0
+    var upleft = 0
+    let s1 = Array(text1)
+    let s2 = Array(text2)
+    for i in 1...m {
+        upleft = dp[0] // 每行开始的时候需要更新下upleft, 这里其实每次都是0
+        for j in 1...n {
+            temp = dp[j] // 记录未被覆盖之前的dp[j], 它会在计算 j+1的时候作为upLeft用到
+            if s1[i - 1] == s2[j - 1] {
+                dp[j] = upleft + 1 //upleft代表左上
+            } else {
+                dp[j] = max(dp[j], dp[j - 1]) //j-1代表左侧数据，j代表正上方
+            }
+            upleft = temp //更新左上
+        }
+    }
+    return dp[n]
 }
 
 //交错字符串
