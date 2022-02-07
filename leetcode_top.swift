@@ -1044,4 +1044,69 @@ func longestCommonSubsequence(_ text1: String, _ text2: String) -> Int {
     return dp[n]
 }
 
-//交错字符串
+//MARK: 交错字符串
+
+//MARK: 234. 回文链表
+//方法一: 将链表转换为数组，然后头尾双指针比较
+
+func isPalindrome(_ head: ListNode?) -> Bool {
+    var arr = [Int]()
+    var cur: ListNode? = head
+    while cur != nil {
+        arr.append(cur!.val)
+        cur = cur?.next
+    }
+    var front = 0
+    var tail = arr.count - 1
+    while front < tail { //注意不能用不等于，因为为偶数时不会交汇
+        if (arr[front] != arr[tail]) {
+            return false
+        }
+        front += 1
+        tail -= 1
+    }
+    return true
+}
+
+//方法二：优化O(n)空间，利用快慢指针找到后半部分链表，反转后半部分链表，然后对比是否为回文，恢复链表，返回结果
+
+//以下为不还原链表的方式
+func isPalindrome1(_ head: ListNode?) -> Bool {
+    if head == nil { return true }
+    let m = findMiddle(head)
+    var p1 = head
+    var p2 = reverseList(m)
+
+    while p2 != nil {
+        if p1?.val != p2?.val {
+            return false
+        }
+        p1 = p1?.next
+        p2 = p2?.next
+    }
+    return true
+    
+}
+
+func reverseList(_ head: ListNode?) -> ListNode? {
+    var pre: ListNode? = nil
+    var cur = head
+    while(cur != nil) {
+        let next = cur?.next
+        cur?.next = pre
+        pre = cur
+        cur = next
+    }
+    return pre
+}
+
+//1-2-2-1
+func findMiddle(_ head: ListNode?) -> ListNode? {
+    var fast = head
+    var slow = head
+    while fast?.next != nil {
+        fast = fast?.next?.next
+        slow = slow?.next
+    }
+    return slow
+}
