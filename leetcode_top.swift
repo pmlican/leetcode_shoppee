@@ -729,7 +729,7 @@ func lengthOfLongestSubstring2(_ s: String) -> Int {
 }
 
 
-//MARK: 同构字符串
+//MARK: 同构字符串，超时示例，字符串转字符数组
 func isIsomorphic(_ s: String, _ t: String) -> Bool {
     var s2t: [Character: Character] = [:]
     var t2s: [Character: Character] = [:]
@@ -1109,4 +1109,48 @@ func findMiddle(_ head: ListNode?) -> ListNode? {
         slow = slow?.next
     }
     return slow
+}
+
+
+//MARK: 25. K 个一组翻转链表
+
+//官方解法
+func reverseKGroup(_ head: ListNode?, _ k: Int) -> ListNode? {
+    let hair = ListNode(0)
+    var head: ListNode? = head
+    hair.next = head
+    var pre: ListNode? = hair
+    while (head != nil) {
+        var tail: ListNode? = pre
+        for _ in 0..<k {
+            tail = tail?.next
+            if tail == nil {
+                return hair.next
+            }
+        }
+        let next = tail?.next
+        let reverse = myReverse(head, tail)
+        head = reverse.0
+        tail = reverse.1
+        pre?.next = head
+        tail?.next = next
+        pre = tail
+        head = tail?.next
+        
+    }
+    return hair.next
+}
+
+func myReverse(_ head: ListNode?, _ tail: ListNode?) -> (ListNode?,  ListNode?) {
+    var pre = tail?.next
+    // 或者 var pre: ListNode? = nil
+    var p = head
+    while (pre !== tail) {
+        let next = p?.next
+        p?.next = pre
+        pre = p
+        p = next
+    }
+    return (tail, head)
+//或者 return (pre, head)
 }
